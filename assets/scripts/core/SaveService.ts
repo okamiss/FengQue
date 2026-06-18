@@ -16,6 +16,7 @@ import {
     INITIAL_CURRENCIES,
     INITIAL_RANK,
 } from '../config/GameConfig';
+import { getDefaultOwnedDressIds, getDefaultEquippedDressIds } from '../config/DressConfig';
 
 export class SaveService {
     /** 生成一份全新的默认存档 */
@@ -29,8 +30,8 @@ export class SaveService {
             stats: { ...INITIAL_STATS },
             relations: { ...INITIAL_RELATIONS },
             flags: {},
-            ownedDressIds: [],
-            equippedDressIds: [],
+            ownedDressIds: getDefaultOwnedDressIds(),
+            equippedDressIds: getDefaultEquippedDressIds(),
             currencies: { ...INITIAL_CURRENCIES },
             revive: {
                 todayCount: 0,
@@ -85,6 +86,16 @@ export class SaveService {
         }
         if (!data.revive) {
             data.revive = { todayCount: 0, chapterCount: 0, lastDate: SaveService.today() };
+        }
+        // 第二阶段：衣橱 / 身份字段兜底
+        if (!Array.isArray(data.ownedDressIds) || data.ownedDressIds.length === 0) {
+            data.ownedDressIds = getDefaultOwnedDressIds();
+        }
+        if (!Array.isArray(data.equippedDressIds)) {
+            data.equippedDressIds = getDefaultEquippedDressIds();
+        }
+        if (!data.rankId) {
+            data.rankId = INITIAL_RANK;
         }
         return data;
     }

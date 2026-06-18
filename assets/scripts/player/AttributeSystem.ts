@@ -7,6 +7,8 @@
 import { PlayerModel } from './PlayerModel';
 import { ChoiceEffect, ChoiceCondition, PlayerStats, PlayerRelations } from '../story/StoryTypes';
 import { STAT_MIN, STAT_MAX } from '../config/GameConfig';
+import { getRankStatBonus } from '../config/RankConfig';
+import { sumDressStatBonus } from '../config/DressConfig';
 
 export class AttributeSystem {
     /** 应用单条效果到玩家数据 */
@@ -29,6 +31,10 @@ export class AttributeSystem {
                 break;
             case 'add_item':
                 model.addItem(String(effect.value));
+                break;
+            case 'unlock_dress':
+                // 剧情解锁衣服：value 为 true 时用 key 作为衣服 id，否则直接取 value
+                model.addItem(effect.value === true ? effect.key : String(effect.value));
                 break;
             default:
                 console.warn('[AttributeSystem] unknown effect type:', (effect as ChoiceEffect).type);
@@ -59,7 +65,22 @@ export class AttributeSystem {
         return Math.max(STAT_MIN, Math.min(STAT_MAX, v));
     }
 
-    /** 玩家是否已死亡（体力 <= 0） */
+    /**
+     * 计算总属性 = 基础属性 + 身份加成 + 服装加成。
+     * 注意：不会修改基础属性（model.stats 保持不变），仅返回一份新对象供展示/判定。
+     */
+    static getTotalStats(model: PlayerModel): PlayerStats {
+        const base = model.stats;
+        const total: PlayerStats = { ...base };
+        const rankBonus = getRankStatBonus(model.rankId);
+        const dressBonus = sumDressStatBonus(model.save.equippedDressIds);
+        (Object.keys(total) as (keyof PlayerStats)[]).forEach((k) => {
+            total[k] = base[k] + (rankBonus[k] || 0) + (dressBonus[k] || 0);
+        });
+        return total;
+    }
+
+    /** 玩家是否已死亡（按基础体力判定，避免装备/身份临时加成掩盖致死伤害） */
     static isDead(model: PlayerModel): boolean {
         return model.stats.health <= 0;
     }
@@ -69,7 +90,8 @@ export class AttributeSystem {
         let current: number | string | boolean;
         switch (cond.type) {
             case 'stat':
-                current = (model.stats as unknown as Record<string, number>)[cond.key];
+                // 剧情条件按“总属性”判定（基础 + 身份 + 服装加成）
+                current = (AttributeSystem.getTotalStats(model) as unknown as Record<string, number>)[cond.key];
                 break;
             case 'relation':
                 current = (model.relations as unknown as Record<string, number>)[cond.key];

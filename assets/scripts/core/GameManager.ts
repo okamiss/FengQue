@@ -10,14 +10,17 @@ import { SaveService } from './SaveService';
 import { EventBus, GameEvents } from './EventBus';
 import { PlayerModel } from '../player/PlayerModel';
 import { StorySystem } from '../story/StorySystem';
+import { RankSystem } from '../player/RankSystem';
+import { AttributeSystem } from '../player/AttributeSystem';
+import { WardrobeSystem } from '../wardrobe/WardrobeSystem';
 import { AdService } from '../monetization/AdService';
-import { DeathEnding, StoryNode, StoryChoice } from '../story/StoryTypes';
+import { DeathEnding, StoryNode, StoryChoice, PlayerStats } from '../story/StoryTypes';
 import { DEFAULT_PLAYER_NAME } from '../config/GameConfig';
 
 const { ccclass, property } = _decorator;
 
 /** UI 视图状态 */
-export type ViewState = 'main' | 'story' | 'death';
+export type ViewState = 'main' | 'story' | 'death' | 'wardrobe' | 'rank';
 
 @ccclass('GameManager')
 export class GameManager extends Component {
@@ -36,8 +39,19 @@ export class GameManager extends Component {
     @property({ type: Node, tooltip: '死亡/结局面板根节点（DeathPanel）' })
     deathPanel: Node = null!;
 
+    @property({ type: Node, tooltip: '衣橱面板根节点（WardrobePanel）' })
+    wardrobePanel: Node = null!;
+
+    @property({ type: Node, tooltip: '晋升面板根节点（RankPanel）' })
+    rankPanel: Node = null!;
+
     private model: PlayerModel | null = null;
     private storySystem: StorySystem | null = null;
+    private rankSystem: RankSystem | null = null;
+    private wardrobeSystem: WardrobeSystem | null = null;
+
+    /** 进入衣橱/晋升前所处的视图，关闭浮层时返回（main 或 story） */
+    private overlayReturnView: ViewState = 'main';
 
     onLoad() {
         GameManager.instance = this;
@@ -138,6 +152,61 @@ export class GameManager extends Component {
     private bootSystems(model: PlayerModel): void {
         this.model = model;
         this.storySystem = new StorySystem(model);
+        this.wardrobeSystem = new WardrobeSystem(model);
+        this.rankSystem = new RankSystem(model, this.wardrobeSystem);
+    }
+
+    /** 确保已有玩家模型（衣橱/晋升入口可能在未开始游戏时点击）：优先内存，其次读档，最后新建默认存档 */
+    private ensureModel(): PlayerModel {
+        if (this.model) return this.model;
+        let data = SaveService.load();
+        if (!data) {
+            data = SaveService.createDefault(DEFAULT_PLAYER_NAME);
+            SaveService.save(data);
+        }
+        this.bootSystems(new PlayerModel(data));
+        return this.model!;
+    }
+
+    // ===== 第二阶段：衣橱 / 晋升 入口 =====
+
+    getModel(): PlayerModel | null {
+        return this.model;
+    }
+
+    getWardrobeSystem(): WardrobeSystem | null {
+        return this.wardrobeSystem;
+    }
+
+    getRankSystem(): RankSystem | null {
+        return this.rankSystem;
+    }
+
+    /** 总属性（基础 + 身份 + 服装），供 UI 展示 */
+    getTotalStats(): PlayerStats | null {
+        return this.model ? AttributeSystem.getTotalStats(this.model) : null;
+    }
+
+    /** 打开衣橱 */
+    openWardrobe(): void {
+        this.ensureModel();
+        this.overlayReturnView = this.storyPanel && this.storyPanel.active ? 'story' : 'main';
+        this.showView('wardrobe');
+        EventBus.emit('wardrobe-open');
+    }
+
+    /** 打开晋升 */
+    openRank(): void {
+        this.ensureModel();
+        this.overlayReturnView = this.storyPanel && this.storyPanel.active ? 'story' : 'main';
+        this.showView('rank');
+        EventBus.emit('rank-open');
+    }
+
+    /** 关闭衣橱/晋升浮层，返回之前的视图 */
+    closeOverlay(): void {
+        this.showView(this.overlayReturnView);
+        if (this.overlayReturnView === 'main') this.refreshMain();
     }
 
     /** 切换 UI 视图：剧情视图同时显示剧情面板与选项面板 */
@@ -146,6 +215,8 @@ export class GameManager extends Component {
         if (this.storyPanel) this.storyPanel.active = state === 'story';
         if (this.choicePanel) this.choicePanel.active = state === 'story';
         if (this.deathPanel) this.deathPanel.active = state === 'death';
+        if (this.wardrobePanel) this.wardrobePanel.active = state === 'wardrobe';
+        if (this.rankPanel) this.rankPanel.active = state === 'rank';
     }
 
     private refreshMain(): void {

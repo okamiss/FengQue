@@ -19,6 +19,12 @@ export const GameEvents = {
     PLAYER_DIED: 'player-died',
     /** 到达阶段性（成功）结局：(node: StoryNode) */
     STORY_ENDED: 'story-ended',
+    /** 玩家属性/总属性变化（换装、晋升后）：(save: PlayerSaveData) */
+    STATS_CHANGED: 'stats-changed',
+    /** 衣橱数据变化（解锁/装备/卸下）：(save: PlayerSaveData) */
+    WARDROBE_CHANGED: 'wardrobe-changed',
+    /** 身份变化（晋升成功）：(save: PlayerSaveData) */
+    RANK_CHANGED: 'rank-changed',
 } as const;
 
 export class EventBus {

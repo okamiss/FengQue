@@ -55,7 +55,7 @@ export const REVIVE_RULE = {
     maxRevivePerDay: 3,
 };
 
-/** 身份 id -> 中文名 */
+/** 身份 id -> 中文名（与 RankConfig 保持一致；RankConfig 为系统层唯一来源，此处供 UI 快速取名） */
 export const RANK_NAMES: Record<string, string> = {
     rough_maid: '粗使宫女',
     second_maid: '二等宫女',
@@ -63,6 +63,9 @@ export const RANK_NAMES: Record<string, string> = {
     chief_maid: '掌事宫女',
     female_officer: '女官',
     cairen: '采女',
+    daying: '答应',
+    changzai: '常在',
+    guiren: '贵人',
 };
 
 /** 属性 key -> 中文名（用于 UI 展示） */

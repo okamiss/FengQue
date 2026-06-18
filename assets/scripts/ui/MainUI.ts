@@ -24,6 +24,12 @@ export class MainUI extends Component {
     @property({ type: Node, tooltip: '“重置存档”按钮' })
     resetButton: Node = null!;
 
+    @property({ type: Node, tooltip: '“衣橱”入口按钮' })
+    wardrobeButton: Node = null!;
+
+    @property({ type: Node, tooltip: '“晋升”入口按钮' })
+    rankButton: Node = null!;
+
     @property({ type: Label, tooltip: '提示文本（可选）' })
     tipLabel: Label = null!;
 
@@ -33,6 +39,8 @@ export class MainUI extends Component {
         this.bindClick(this.startButton, () => GameManager.instance?.newGame());
         this.bindClick(this.continueButton, () => this.onContinue());
         this.bindClick(this.resetButton, () => this.onReset());
+        this.bindClick(this.wardrobeButton, () => GameManager.instance?.openWardrobe());
+        this.bindClick(this.rankButton, () => GameManager.instance?.openRank());
 
         if (this.titleLabel) this.titleLabel.string = '凤阙浮生';
     }

@@ -69,6 +69,25 @@ export class PlayerModel {
         if (!this.hasItem(id)) this._save.ownedDressIds.push(id);
     }
 
+    // ---- 衣橱（拥有/装备的原始数据，装备规则由 WardrobeSystem 处理）----
+
+    get ownedDressIds(): string[] {
+        return this._save.ownedDressIds;
+    }
+
+    get equippedDressIds(): string[] {
+        return this._save.equippedDressIds;
+    }
+
+    isEquipped(id: string): boolean {
+        return this._save.equippedDressIds.indexOf(id) >= 0;
+    }
+
+    /** 整体替换已装备列表（WardrobeSystem 计算好后回写） */
+    setEquipped(ids: string[]): void {
+        this._save.equippedDressIds = ids;
+    }
+
     addCurrency(key: string, value: number): void {
         const c = this._save.currencies as unknown as Record<string, number>;
         if (typeof c[key] === 'number') {

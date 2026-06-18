@@ -110,6 +110,8 @@ export const StoryConfig: StoryNode[] = [
                 effects: [
                     { type: 'add_relation', key: 'maidFavor', value: 2 },
                     { type: 'set_flag', key: 'met_taitang', value: true },
+                    // 阿棠回赠一枚素绢香囊（剧情解锁衣服）
+                    { type: 'unlock_dress', key: 'accessory_sujuan_pouch', value: true },
                 ],
             },
         ],
@@ -152,6 +154,8 @@ export const StoryConfig: StoryNode[] = [
                     { type: 'add_stat', key: 'scheming', value: 1 },
                     { type: 'add_stat', key: 'health', value: -2 },
                     { type: 'add_relation', key: 'maidFavor', value: 1 },
+                    // 私下裁出的一袭春柳披烟（剧情解锁衣服）
+                    { type: 'unlock_dress', key: 'cloak_spring_willow', value: true },
                 ],
             },
             {
@@ -214,7 +218,13 @@ export const StoryConfig: StoryNode[] = [
                 id: 'ch2_005_a',
                 text: '整理仪容，前往御花园',
                 nextNodeId: 'ch3_001',
-                effects: [{ type: 'add_stat', key: 'charm', value: 1 }],
+                effects: [
+                    { type: 'add_stat', key: 'charm', value: 1 },
+                    // 为面圣梳妆，得一支玉兰簪花（剧情解锁衣服）
+                    { type: 'unlock_dress', key: 'hair_magnolia', value: true },
+                    // 一点赏银，便于在衣橱中购买衣服
+                    { type: 'add_currency', key: 'silver', value: 60 },
+                ],
             },
         ],
     },

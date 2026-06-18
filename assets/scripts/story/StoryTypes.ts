@@ -23,23 +23,8 @@ export interface PlayerRelations {
     eunuchFavor: number;   // 太监消息网好感
 }
 
-/** 衣服部位 */
-export type DressPart = 'hair' | 'makeup' | 'dress' | 'cloak' | 'accessory' | 'hand';
-/** 衣服稀有度 */
-export type DressRarity = 'normal' | 'rare' | 'epic' | 'legend';
-/** 衣服解锁方式 */
-export type DressUnlockType = 'story' | 'gold' | 'ad' | 'share' | 'event';
-
-/** 衣服道具（首版换装系统暂不实现具体玩法，类型先定义好以便后续扩展） */
-export interface DressItem {
-    id: string;
-    name: string;
-    part: DressPart;
-    rarity: DressRarity;
-    stats: Partial<Pick<PlayerStats, 'charm' | 'etiquette' | 'wisdom' | 'prestige'>>;
-    tags: string[];
-    unlockType: DressUnlockType;
-}
+// 注：衣服相关类型（DressItem / DressPart / DressRarity / DressUnlockType 等）
+// 第二阶段已迁移到 wardrobe/DressTypes.ts，作为换装系统的唯一类型来源。
 
 /** 选择产生的效果类型 */
 export type ChoiceEffectType =
@@ -48,7 +33,8 @@ export type ChoiceEffectType =
     | 'add_item'
     | 'change_rank'
     | 'set_flag'
-    | 'add_currency';
+    | 'add_currency'
+    | 'unlock_dress'; // 第二阶段：剧情解锁衣服
 
 /** 选择效果：对玩家数据做一次改动 */
 export interface ChoiceEffect {
